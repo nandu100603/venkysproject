@@ -81,7 +81,7 @@ pipeline {
 post {
   success {
     script {
-      def authorEmail = bat(script: 'git log -1 --pretty=format:%ae', returnStdout: true).trim()
+      def authorEmail = sh 'git log -1 --pretty=format:%ae'
       emailext body: 'This is the body of the email.',
               subject: 'This is the subject of the email.',
               to: authorEmail,
@@ -90,7 +90,7 @@ post {
   }
   failure {
     script {
-      def authorEmail = bat(script: 'git log -1 --pretty=format:%ae', returnStdout: true).trim()
+      def authorEmail = sh 'git log -1 --pretty=format:%ae'
       emailext body: 'This is the body of the email.',
               subject: 'This is the subject of the email.',
               to: authorEmail,
