@@ -125,6 +125,9 @@ echo "Author's email address: ${authorEmail}"
     }
     }
 }
+scm {
+  git('https://github.com/nandu100603/venkysproject.git')
+}
 
 @NonCPS
 List<String> getChangedFiles(String directory) {
