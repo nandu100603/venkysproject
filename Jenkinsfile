@@ -79,30 +79,52 @@ pipeline {
         }
     }
 post {
-  success {
-    script {
-      def authorEmail = sh 'git log -1 --pretty=format:%ae'
-      emailext body: 'This is the body of the email.',
-              subject: 'This is the subject of the email.',
-              to: authorEmail,
-              from: 'nandu100603@gmail.com'
+        success {
+            script {
+                def authorEmail = bat(script: 'git log -1 --pretty=format:%ae', returnStdout: true).trim()
+echo "Author's email address: ${authorEmail}"
+
+                if (authorEmail) {
+
+                    emailext body: '''
+                        Hi ${GIT_AUTHOR_NAME},
+                        Your Jenkins build ${BUILD_ID} for project ${JOB_NAME} has been completed successfully.
+                        Thanks, The Jenkins team
+                    ''',
+                    subject: 'Jenkins build ${BUILD_ID} for project ${JOB_NAME} has been completed successfully',
+                    to: authorEmail,
+                    from: 'nandu100603@gmail.com'
+                } else {
+                    echo "No email address found for the commit author."
+                }
+            }
+        }
+    failure {
+        script {
+            def authorEmail = bat(script: 'git log -1 --pretty=format:%ae', returnStdout: true).trim()
+            echo "Author's email address: ${authorEmail}"
+
+            if (authorEmail) {
+                def failureMessage = '''
+                    Hi ${GIT_AUTHOR_NAME},
+                    Your Jenkins build ${BUILD_ID} for project ${JOB_NAME} has failed.
+                    Please check the Jenkins console for more details.
+                    Thanks,
+                    The Jenkins team
+                '''
+
+                emailext body: failureMessage,
+                        subject: 'Jenkins build ${BUILD_ID} for project ${JOB_NAME} has failed',
+                        to: authorEmail,
+                        from: 'nandu100603@gmail.com'
+            } else {
+                echo "No email address found for the commit author."
+            }
+        }
     }
-  }
-  failure {
-    script {
-      def authorEmail = sh 'git log -1 --pretty=format:%ae'
-      emailext body: 'This is the body of the email.',
-              subject: 'This is the subject of the email.',
-              to: authorEmail,
-              from: 'nandu100603@gmail.com'
-    }
-  }
+    }  
 }
-    
-}
-scm {
-  git('https://github.com/nandu100603/venkysproject.git')
-}
+
 
 @NonCPS
 List<String> getChangedFiles(String directory) {
