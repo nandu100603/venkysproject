@@ -78,52 +78,27 @@ pipeline {
             }
         }
     }
-
-    post {
-        success {
-  script {
-    def committers = []
-    for (changeLogSet in currentBuild.changeSets) {
-      for (entry in changeLogSet.getItems()) {
-        committers.add(entry.authorEmail)
-      }
+post {
+  success {
+    script {
+      def authorEmail = bat(script: 'git log -1 --pretty=format:%ae', returnStdout: true).trim()
+      emailext body: 'This is the body of the email.',
+              subject: 'This is the subject of the email.',
+              to: authorEmail,
+              from: 'nandu100603@gmail.com'
     }
-
-    // Send an email to all committers
-    emailext body: '''
-      Hi ${GIT_AUTHOR_NAME},
-      Your Jenkins build ${BUILD_ID} for project ${JOB_NAME} has been completed successfully.
-      Thanks,
-      The Jenkins team
-    ''',
-    subject: 'Jenkins build ${BUILD_ID} for project ${JOB_NAME} has been completed successfully',
-    to: committers,
-    from: 'nandu100603@gmail.com'
+  }
+  failure {
+    script {
+      def authorEmail = bat(script: 'git log -1 --pretty=format:%ae', returnStdout: true).trim()
+      emailext body: 'This is the body of the email.',
+              subject: 'This is the subject of the email.',
+              to: authorEmail,
+              from: 'nandu100603@gmail.com'
+    }
   }
 }
-    failure {
-  script {
-    def committers = []
-    for (changeLogSet in currentBuild.changeSets) {
-      for (entry in changeLogSet.getItems()) {
-        committers.add(entry.authorEmail)
-      }
-    }
-
-    // Send an email to all committers
-    emailext body: '''
-      Hi ${GIT_AUTHOR_NAME},
-      Your Jenkins build ${BUILD_ID} for project ${JOB_NAME} has failed.
-      Please check the Jenkins console for more details.
-      Thanks,
-      The Jenkins team
-    ''',
-    subject: 'Jenkins build ${BUILD_ID} for project ${JOB_NAME} has failed',
-    to: committers,
-    from: 'nandu100603@gmail.com'
-  }
-}
-    }
+    
 }
 scm {
   git('https://github.com/nandu100603/venkysproject.git')
